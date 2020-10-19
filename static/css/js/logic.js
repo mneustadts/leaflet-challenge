@@ -17,3 +17,35 @@ function getColor(magnitude) {
         return 'magenta'
     }
 };
+
+//Create radius function
+function getRadius(magnitude) {
+    return magnitude * 30000;
+};
+// Perform a GET request to the query URL
+d3.json(quakeURL, function(data) {
+    // Once we get a response, send the data.features object to the createFeatures function
+    createFeatures(data.features);
+  });
+
+  function createFeatures(quakeData) {
+
+    var earthquakes = L.geoJSON(quakeData, {
+    // Define a function we want to run once for each feature in the features array
+    // Give each feature a popup describing the place and time of the earthquake
+   onEachFeature : function (feature, layer) {
+  
+      layer.bindPopup("<h3>" + feature.properties.place +
+        "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" + "<p> Magnitude: " +  feature.properties.mag + "</p>")
+      },     pointToLayer: function (feature, latlng) {
+        return new L.circle(latlng,
+          {radius: getRadius(feature.properties.mag),
+          fillColor: getColor(feature.properties.mag),
+          fillOpacity: 1,
+          stroke: false,
+      })
+    }
+    });
+
+    createMap(earthquakes);
+}
