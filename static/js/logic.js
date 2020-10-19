@@ -1,5 +1,4 @@
 var quakeURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson"
-var platesURL = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_plates.json"
 
 // Create color function
 function getColor(magnitude) {
@@ -22,33 +21,6 @@ function getColor(magnitude) {
 function getRadius(magnitude) {
     return magnitude * 30000;
 };
-// Perform a GET request to the query URL
-d3.json(quakeURL, function(data) {
-    // Once we get a response, send the data.features object to the createFeatures function
-    createFeatures(data.features);
-  });
-
-  function createFeatures(quakeData) {
-
-    var earthquakes = L.geoJSON(quakeData, {
-    // Define a function we want to run once for each feature in the features array
-    // Give each feature a popup describing the place and time of the earthquake
-   onEachFeature : function (feature, layer) {
-  
-      layer.bindPopup("<h3>" + feature.properties.place +
-        "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" + "<p> Magnitude: " +  feature.properties.mag + "</p>")
-      },     pointToLayer: function (feature, latlng) {
-        return new L.circle(latlng,
-          {radius: getRadius(feature.properties.mag),
-          fillColor: getColor(feature.properties.mag),
-          fillOpacity: 1,
-          stroke: false,
-      })
-    }
-    });
-
-    createMap(earthquakes);
-}
 
 function createMap(earthquakes) {
 
@@ -67,9 +39,28 @@ function createMap(earthquakes) {
       accessToken: API_KEY
     });
   
-    // Define a baseMaps object to hold our base layers
+    // Define a baseMaps object
     var baseMaps = {
       "Satelite Map": satelitemap,
       "Dark Map": darkmap
     };
+
   
+    // Create overlay object 
+    var overlayMaps = {
+      Earthquakes: earthquakes
+    };
+  
+    // Create our map
+    var myMap = L.map("mapid", {
+      center: [0, 0],
+      zoom: 2,
+      layers: [satelitemap, earthquakes]
+    });
+  
+    // Create a layer control
+    L.control.layers(baseMaps, overlayMaps, {
+      collapsed: false
+    }).addTo(myMap);
+  
+});
